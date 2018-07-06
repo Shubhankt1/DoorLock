@@ -37,7 +37,23 @@ void loop() {
   strID.toUpperCase();
   Serial.print("Card: ");
   Serial.println(strID);
-  delay(1000);
 
   //Do the verification
+  if(strID.indexOf("92:AA:CD:73") >=0){
+    digitalWrite(A0, HIGH);
+    tone(Buzz, 3000, 500);
+    delay(500);
+    digitalWrite(A0, LOW);
+    delay(500);
+  }
+  else{
+    digitalWrite(A1, HIGH);
+    tone(Buzz, 300, 200);
+    delay(250);
+    tone(Buzz, 300, 200);
+    delay(250);
+    tone(Buzz, 300, 200);
+    digitalWrite(A1, LOW);
+    delay(400);
+  }
 }

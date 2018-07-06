@@ -1,3 +1,4 @@
+#include <Servo.h>
 #include <SPI.h>
 #include <MFRC522.h>
 
@@ -6,6 +7,7 @@
 #define ledPin1 A0
 #define ledPin2 A1
 #define Buzz A2
+Servo servo;
 MFRC522 rc522(SS_PIN, RST_PIN);
 
 void setup() {
@@ -16,6 +18,8 @@ void setup() {
   pinMode(A0, OUTPUT);
   pinMode(A1, OUTPUT);
   pinMode(A2, OUTPUT);
+  servo.attach(6);
+  servo.write(5);
   Serial.println("Scan the Card:");
 }
 
@@ -40,11 +44,13 @@ void loop() {
 
   //Do the verification
   if(strID.indexOf("92:AA:CD:73") >=0){
+    servo.write(30);
     digitalWrite(A0, HIGH);
     tone(Buzz, 3000, 500);
     delay(500);
     digitalWrite(A0, LOW);
     delay(500);
+    servo.write(5);
   }
   else{
     digitalWrite(A1, HIGH);

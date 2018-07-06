@@ -1,39 +1,37 @@
+#include <Keypad.h>
 #include <SPI.h>
 #include <MFRC522.h>
 
 #define SS_PIN 10
 #define RST_PIN 9
-#define ledPin A0
-MFRC522 rc522(SS_PIN, RST_PIN);
+#define ledPin1 A0
+#define ledPin2 A1
+#define Buzz A2
+const int Rows = 4;
+const int Cols = 4;
+char keymap[Rows][Cols] =
+{
+  {'1','2','3','A'},
+  {'4','5','6','B'},
+  {'7','8','9','C'},
+  {'*','0','#','D'}
+};
+
+byte rPins[Rows] = {8,7,6,5};
+byte cPins[Cols] = {4,3,2,A3};
+Keypad kpd = Keypad(makeKeymap(keymap), rPins, cPins, Rows, Cols);
+//MFRC522 rc522(SS_PIN, RST_PIN);
 
 void setup() {
   // put your setup code here, to run once:
-  Serial.begin(9600);   //Initialize serial comm. with the PC
-  SPI.begin();          //Initialize SPI bus
-  digitalWrite(ledPin, HIGH);
-  delay(200);
-  digitalWrite(ledPin, LOW);
-  delay(200);
-  digitalWrite(ledPin, HIGH);
-  delay(200);
-  digitalWrite(ledPin, LOW);
-  rc522.PCD_Init();     //Initialize card reader
-  Serial.println("Scan to Enter");
+  //rc522.PCD_Init();     //Initialize card reader
+  Serial.begin(9600);
+  Serial.println("Enter the CODE:");
 }
 
 void loop() {
-  digitalWrite(ledPin, LOW);
   // put your main code here, to run repeatedly:
-  //check for new card
-  if(!rc522.PICC_IsNewCardPresent()) {
-      return;     //Goto start of loop
-  }
-  //Read one of the cards
-  if(!rc522.PICC_ReadCardSerial()){
-    return;       //If ReadCardSerial returns 1, the 'uid' struct contains the ID of the read card
-  }
-
-  //Dump debug info about the card.
-  digitalWrite(ledPin, HIGH);
-  rc522.PICC_DumpToSerial(&(rc522.uid));
+  char keypressed = kpd.getKey();
+  if(keypressed != NO_KEY)
+    Serial.println(keypressed);
 }

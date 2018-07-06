@@ -1,4 +1,3 @@
-#include <Keypad.h>
 #include <SPI.h>
 #include <MFRC522.h>
 
@@ -7,56 +6,38 @@
 #define ledPin1 A0
 #define ledPin2 A1
 #define Buzz A2
-const int Rows = 4;
-const int Cols = 4;
-char keymap[Rows][Cols] =
-{
-  {'1','2','3','A'},
-  {'4','5','6','B'},
-  {'7','8','9','C'},
-  {'*','0','#','D'}
-};
-
-byte rPins[Rows] = {8,7,6,5};
-byte cPins[Cols] = {4,3,2,A3};
-String pw = "123A";
-String keypressed = "";
-Keypad kpd = Keypad(makeKeymap(keymap), rPins, cPins, Rows, Cols);
-//MFRC522 rc522(SS_PIN, RST_PIN);
+MFRC522 rc522(SS_PIN, RST_PIN);
 
 void setup() {
   // put your setup code here, to run once:
-  //rc522.PCD_Init();     //Initialize card reader
   Serial.begin(9600);
+  SPI.begin();
+  rc522.PCD_Init();     //Initialize card reader
   pinMode(A0, OUTPUT);
   pinMode(A1, OUTPUT);
   pinMode(A2, OUTPUT);
-  Serial.println("Enter the CODE:");
+  Serial.println("Scan the Card:");
 }
 
 void loop() {
   // put your main code here, to run repeatedly:
-  char key = kpd.getKey();
-  if(key!=NO_KEY){
-  Serial.print(key);
-  keypressed.concat(key);
-  if(keypressed == pw){
-    digitalWrite(A0, HIGH);
-    tone(Buzz, 1000,500);
-    Serial.println("\nWelcome Shubhank");
-    delay(500);
-    digitalWrite(A0, LOW);
-    keypressed = "";
-    }
-  else{
-    digitalWrite(A1, HIGH);
-    tone(Buzz, 300, 200);
-    Serial.println("\nWRONG!");
-    delay(250);
-    tone(Buzz, 300, 200);
-    delay(250);
-    tone(Buzz, 300, 200);
-    digitalWrite(A1, LOW);
-    }
-  }
+
+  //check if any card is present and also scan only one card if multiple are present
+  if(!rc522.PICC_IsNewCardPresent() || !rc522.PICC_ReadCardSerial())  return;
+
+  //check if the type of the card is what we need and not any other card.
+  MFRC522::PICC_Type type = rc522.PICC_GetType(rc522.uid.sak);
+  if(type!= MFRC522::PICC_TYPE_MIFARE_MINI &&
+     type!= MFRC522::PICC_TYPE_MIFARE_1K &&
+     type!= MFRC522::PICC_TYPE_MIFARE_4K) return;
+  String strID = "";
+  for(byte i=0; i<4; i++) strID += (rc522.uid.uidByte[i] < 0x10 ? "0" : "") + String(rc522.uid.uidByte[i], HEX) + (i != 3 ? ":" : "");
+
+  //put ID in capitals
+  strID.toUpperCase();
+  Serial.print("Card: ");
+  Serial.println(strID);
+  delay(1000);
+
+  //Do the verification
 }
